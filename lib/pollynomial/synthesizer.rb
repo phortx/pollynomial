@@ -25,6 +25,7 @@ module Pollynomial
       File.open(file_name, 'ab') do |file|
         split_text(text).each do |_text|
           tmp_file = Tempfile.new
+          tmp_file.binmode
           client.synthesize_speech(
               response_target: tmp_file,
               text: _text,
