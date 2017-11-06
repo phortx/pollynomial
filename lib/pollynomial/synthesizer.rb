@@ -39,6 +39,23 @@ module Pollynomial
       end
     end
 
+
+    def synthesize_to_file(text, file)
+      split_text(text).each do |_text|
+        tmp_file = Tempfile.new
+        tmp_file.binmode
+        client.synthesize_speech(
+            response_target: tmp_file,
+            text: _text,
+            output_format: output_format,
+            sample_rate: sample_rate,
+            voice_id: voice_id
+          )
+        IO.copy_stream(tmp_file, file)
+        sleep(0.1)
+      end
+    end
+
     def available_voices_in(language_code: 'en-US')
       voices = client.describe_voices(language_code: language_code)
       voices.voices if voices
