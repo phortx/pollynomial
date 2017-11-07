@@ -6,7 +6,7 @@ module Pollynomial
     DEFAULT_DELIMITER = '[.。]'
     COMMA = '[,、]'
 
-    attr_reader :voice_id, :output_format, :sample_rate, :client
+    attr_reader :voice_id, :output_format, :sample_rate, :client, :text_type
 
     def initialize(options={})
       options[:region] ||= 'us-east-1'
@@ -17,6 +17,7 @@ module Pollynomial
       @comma = options.delete(:comma) || COMMA
       @sample_rate = options.delete(:sample_rate) || '16000'
       @output_format = options.delete(:output_format) || 'mp3'
+      @text_type = options.delete(:text_type) || 'text'
       @client = Aws::Polly::Client.new(options)
     end
 
@@ -24,6 +25,10 @@ module Pollynomial
       File.delete(file_name) if File.exist?(file_name)
       File.open(file_name, 'ab') do |file|
         split_text(text).each do |_text|
+          if @text_type == 'ssml'
+            _text.prepend('<speak>')
+            _text += '</speak>'
+          end
           tmp_file = Tempfile.new
           tmp_file.binmode
           client.synthesize_speech(
@@ -42,6 +47,10 @@ module Pollynomial
 
     def synthesize_to_file(text, file)
       split_text(text).each do |_text|
+        if @text_type == 'ssml'
+          _text.prepend('<speak>')
+          _text += '</speak>'
+        end
         tmp_file = Tempfile.new
         tmp_file.binmode
         client.synthesize_speech(
@@ -49,7 +58,8 @@ module Pollynomial
             text: _text,
             output_format: output_format,
             sample_rate: sample_rate,
-            voice_id: voice_id
+            voice_id: voice_id,
+            text_type: @text_type
           )
         IO.copy_stream(tmp_file, file)
         sleep(0.1)
