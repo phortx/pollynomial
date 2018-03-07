@@ -36,7 +36,8 @@ module Pollynomial
               text: _text,
               output_format: output_format,
               sample_rate: sample_rate,
-              voice_id: voice_id
+              voice_id: voice_id,
+              text_type: @text_type
             )
           IO.copy_stream(tmp_file, file)
           sleep(0.1)
